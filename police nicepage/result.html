@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="mr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mock Test Result</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: "Baloo 2", sans-serif;
+      background-color: #f8f9fa;
+    }
+
+    .result-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .correct {
+      color: green;
+    }
+
+    .wrong {
+      color: red;
+    }
+
+    .answer-box {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #fff;
+    }
+
+    .btn-area {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 2rem;
+      justify-content: center;
+    }
+
+    .quote-box {
+      font-size: 1.2rem;
+      color: #0d6efd;
+      background: #e9f2ff;
+      border-left: 5px solid #0d6efd;
+      padding: 12px 20px;
+      border-radius: 6px;
+      margin: 2rem 0 1.5rem;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container py-5">
+    <div class="text-center mb-4">
+      <h1 class="fw-bold">📊 निकाल</h1>
+      <p class="fs-5">तुमच्या उत्तरांचे विश्लेषण</p>
+    </div>
+
+    <div class="quote-box">
+      "परिश्रम केल्याशिवाय यश मिळत नाही — प्रयत्न करत राहा!" 💪
+    </div>
+
+    <div class="result-box" id="resultContent">
+      <h4 class="mb-3">
+        📝 एकूण गुण: <span id="score"></span> / <span id="total"></span>
+      </h4>
+      <div id="reviewContainer"></div>
+    </div>
+
+    <div class="btn-area">
+      <button class="btn btn-outline-primary" onclick="window.location.href='index.html'">
+        🏠 मुख्य पान
+      </button>
+      <button class="btn btn-outline-success" onclick="window.location.href='test.html'">
+        🔁 परत टेस्ट द्या
+      </button>
+      <button class="btn btn-danger" onclick="downloadPDF()">
+        ⬇️ PDF डाउनलोड करा
+      </button>
+      <button class="btn btn-secondary" onclick="window.print()">
+        🖨️ प्रिंट
+      </button>
+    </div>
+  </div>
+  <!-- मग Baloo2 font आणि script.js -->
+  <script src="baloo2.js"></script>
+  <script src="script.js"></script>
+  <script>
+    const questions = JSON.parse(localStorage.getItem("questions"));
+    const answers = JSON.parse(localStorage.getItem("answers"));
+    let score = 0;
+
+    const reviewContainer = document.getElementById("reviewContainer");
+
+    questions.forEach((q, index) => {
+      const userAns = answers[index];
+      const correctAns = q.answer;
+      if (userAns === correctAns) score++;
+
+      const div = document.createElement("div");
+      div.className = "answer-box";
+      div.innerHTML = `
+        <strong>प्रश्न ${index + 1}:</strong> ${q.question}<br>
+        ✅ बरोबर उत्तर: <span class="correct">${q.options[correctAns]
+        }</span><br>
+        🧑 तुमचं उत्तर: <span class="${userAns === correctAns ? "correct" : "wrong"
+        }">
+          ${userAns !== undefined ? q.options[userAns] : "उत्तर दिलं नाही"}
+        </span>
+      `;
+      reviewContainer.appendChild(div);
+    });
+
+    document.getElementById("score").textContent = score;
+    document.getElementById("total").textContent = questions.length;
+
+    // Download PDF
+    function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+
+      doc.text("Mock Test Result", 20, 20);
+      doc.text(`Total Score: ${score} / ${questions.length}`, 20, 30);
+
+      let y = 40;
+      questions.forEach((q, i) => {
+        doc.text(`Q${i + 1}: ${q.question}`, 20, y);
+        y += 7;
+        doc.text(`✔ Correct: ${q.options[q.answer]}`, 25, y);
+        y += 7;
+        const ua = answers[i];
+        const uText = ua !== undefined ? q.options[ua] : "No Answer";
+        doc.text(`👤 Yours: ${uText}`, 25, y);
+        y += 10;
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+        }
+      });
+
+      doc.save("result.pdf");
+    }
+  </script>
+
+
+</body>
+
+</html>
